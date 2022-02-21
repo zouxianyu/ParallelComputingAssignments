@@ -1,8 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" serverName="远程开发" remoteFilesAllowedToDisappearOnAutoupload="false">
+  <component name="PublishConfigData" remoteFilesAllowedToDisappearOnAutoupload="false">
     <serverData>
       <paths name="nbjlservers (6d2f9119-cf7b-43db-98fe-75d1c2ace39a)">
+        <serverdata>
+          <mappings>
+            <mapping deploy="tmp_compile" local="$PROJECT_DIR$" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="ubuntu (6c66e7bd-ae68-47b0-b6a3-569a2ec6d849)">
         <serverdata>
           <mappings>
             <mapping deploy="tmp_compile" local="$PROJECT_DIR$" />
