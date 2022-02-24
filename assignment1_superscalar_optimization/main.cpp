@@ -4,8 +4,8 @@
 #include <cassert>
 #include <numeric>
 
-const int N = 1 << 24;//2^24
-int32_t V[N];
+const int N = (8192<<10)/sizeof(int64_t);//cache size
+int64_t V[N];
 int64_t S;//avoid overflow
 
 /*
@@ -73,14 +73,19 @@ void recursive_sum() {
  */
 void test(void (*func)(), int n) {
     init();
-    auto start = std::chrono::high_resolution_clock::now();
+    int64_t result = std::accumulate(V, V + N, 0l);
+
+    std::chrono::duration<double, std::milli> elapsed{};
+
     for (int i = 0; i < n; i++) {
+        init();
+        auto start = std::chrono::high_resolution_clock::now();
         func();
+        auto end = std::chrono::high_resolution_clock::now();
+        elapsed += end - start;
     }
-    auto end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double, std::milli> elapsed = end - start;
     std::cout << "avg time: " << elapsed.count() / n << " ms" << std::endl;
-    assert(S==std::accumulate(V, V + N, 0));
+    assert(S==result);
 }
 
 /*
