@@ -23,7 +23,7 @@ private:
     T *mem;
     int rows;
     int cols;
-    int align;
+    int align{};
 public:
     DynamicMatrix(int rows, int cols, int align = 0);
 
@@ -54,9 +54,9 @@ DynamicMatrix<T>::Proxy::Proxy(T *mem, int rows, int cols, int row) : mem(mem), 
 template<typename T>
 DynamicMatrix<T>::DynamicMatrix(int rows, int cols, int align) : rows(rows), cols(cols), align(align) {
     if (align == 0) {
-        mem = new T[rows * cols];
+        mem = (T *) malloc(rows * cols * sizeof(T));
     } else {
-        mem = new(std::align_val_t(align)) T[rows * cols];
+        mem = (T *) aligned_alloc(align, rows * cols * sizeof(T));
     }
 }
 
@@ -72,9 +72,9 @@ DynamicMatrix<T>::DynamicMatrix(const DynamicMatrix &other) {
     align = other.align;
     size_t length = other.rows * other.cols;
     if (align == 0) {
-        mem = new T[length];
+        mem = (T *) malloc(length * sizeof(T));
     } else {
-        mem = new(std::align_val_t(align)) T[length];
+        mem = (T *) aligned_alloc(align, length * sizeof(T));
     }
     memcpy(mem, other.mem, length * sizeof(T));
 }
@@ -84,6 +84,7 @@ DynamicMatrix<T>::DynamicMatrix(DynamicMatrix &&other) noexcept {
     rows = other.rows;
     cols = other.cols;
     mem = other.mem;
+    align = other.align;
     other.mem = nullptr;
 }
 
