@@ -6,7 +6,7 @@ TARGET = app
 SRC_DIR = .
 INCLUDE_DIR += .
  
-C_FLAGS = -g -Wall -std=c++11
+C_FLAGS = -g -Wall -std=c++17 -O0 -march=native
 LD_FLAFS = 
 LD_LIBS =
 INCLUDES = -I$(INCLUDE_DIR)
