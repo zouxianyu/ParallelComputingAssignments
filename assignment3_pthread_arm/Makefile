@@ -6,8 +6,8 @@ TARGET = app
 SRC_DIR = .
 INCLUDE_DIR += .
  
-C_FLAGS = -g -Wall -std=c++17 -O0 -march=native
-LD_FLAFS = 
+C_FLAGS = -g -Wall -std=c++11 -O3 -march=armv8-a
+LD_FLAGS = -lpthread
 LD_LIBS =
 INCLUDES = -I$(INCLUDE_DIR)
  
