@@ -5,6 +5,7 @@
 #include <iomanip>
 #include <random>
 #include <thread>
+#include <functional>
 #include <semaphore.h>
 
 #include <xmmintrin.h> //SSE
@@ -20,7 +21,7 @@
 #define ROUND_DOWN(a, b) ((uintptr_t)(a) & ~((uintptr_t)(b) - 1))
 #define ROUND_UP(a, b) (((uintptr_t)(a) + ((uintptr_t)(b) - 1)) & ~((uintptr_t)(b) - 1))
 
-const int max_threads = 8;
+int max_threads = 8;
 const int cache_line_size = 64;
 
 void matrix_print(DynamicMatrix<float> &m) {
@@ -964,9 +965,9 @@ void gauss_thread_worker_roll_param_reduce_AVX512_aligned(DynamicMatrix<float> &
     }
 }
 
-typedef void (*gauss_func)(DynamicMatrix<float> &);
+using gauss_func = std::function<void(DynamicMatrix<float> &)>;
 
-double test(int n, gauss_func gauss, int times) {
+double test(int n, const gauss_func &gauss, int times) {
     DynamicMatrix<float> m(n, n, 64);
 
     std::chrono::duration<double, std::milli> elapsed{};
@@ -978,6 +979,65 @@ double test(int n, gauss_func gauss, int times) {
         elapsed += end - start;
     }
     return elapsed.count() / times;
+}
+
+void
+normal_test_output(const std::vector<gauss_func> &gauss_funcs,
+                   const std::vector<std::string> &names,
+                   int times,
+                   int begin,
+                   int end) {
+
+    std::ofstream outfile("gauss_time.csv");
+
+    //generate the table bar
+    outfile << "问题规模,";
+    for (auto &name: names) {
+        outfile << name << ",";
+    }
+    outfile << std::endl;
+
+    //generate the table content
+    for (int n = begin; n <= end; n *= 2) {
+        outfile << n << ",";
+        for (auto &func: gauss_funcs) {
+            outfile << test(n, func, times) << ",";
+        }
+        outfile << std::endl;
+        std::cout << n << "\tfinished" << std::endl;
+    }
+
+    outfile.close();
+}
+
+void
+thread_test_output(const gauss_func &gauss,
+                   const std::vector<int> &threads,
+                   int times,
+                   int begin,
+                   int end) {
+
+    std::ofstream outfile("gauss_time.csv");
+
+    //generate the table bar
+    outfile << "问题规模,";
+    for (int n = begin; n <= end; n *= 2) {
+        outfile << n << ",";
+    }
+    outfile << std::endl;
+
+    //generate the table content
+    for (int t: threads) {
+        outfile << t << ",";
+        ::max_threads = t;
+        for (int n = begin; n <= end; n *= 2) {
+            outfile << test(n, gauss, times) << ",";
+        }
+        outfile << std::endl;
+        std::cout << "threads_count = " << t << " finished" << std::endl;
+    }
+
+    outfile.close();
 }
 
 int main() {
@@ -1004,7 +1064,7 @@ int main() {
 //    return 0;
 
 
-    gauss_func gauss_funcs[] = {
+    std::vector<gauss_func> gauss_funcs = {
 //            gauss_normal,
 //            gauss_thread_naive,
 //            gauss_thread_roll,
@@ -1018,7 +1078,7 @@ int main() {
             gauss_thread_worker_roll_param_reduce_AVX512_aligned,
     };
 
-    std::string names[] = {
+    std::vector<std::string> names = {
 //            "normal",
 //            "thread_naive",
 //            "thread_roll",
@@ -1037,24 +1097,12 @@ int main() {
     const int end = 512;
 
 
-    std::ofstream outfile("gauss_time.csv");
-
-    //generate the table bar
-    outfile << "问题规模,";
-    for (auto &name: names) {
-        outfile << name << ",";
-    }
-    outfile << std::endl;
-
-    //generate the table content
-    for (int n = begin; n <= end; n *= 2) {
-        outfile << n << ",";
-        for (auto &func: gauss_funcs) {
-            outfile << test(n, func, times) << ",";
-        }
-        outfile << std::endl;
-        std::cout << n << "\tfinished" << std::endl;
-    }
-
-    outfile.close();
+//    normal_test_output(gauss_funcs, names, times, begin, end);
+    thread_test_output(
+            gauss_thread_worker_roll_param_reduce,
+            {2, 4, 8, 16, 32},
+            times,
+            begin,
+            end
+    );
 }
