@@ -5,8 +5,9 @@ LD = $(CC)
 TARGET = app
 SRC_DIR = .
 INCLUDE_DIR += .
- 
-C_FLAGS = -g -Wall -std=c++11 -O3 -march=armv8-a -fopenmp
+
+# x86_64
+C_FLAGS = -g -Wall -std=c++11 -O3 -march=native -fopenmp
 LD_FLAGS =
 LD_LIBS = -fopenmp -lpthread
 INCLUDES = -I$(INCLUDE_DIR)
